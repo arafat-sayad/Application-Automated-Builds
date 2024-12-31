@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#######################################
+# Print a message in a given color.
+# Arguments:
+#   Color. eg: green, red
+#######################################
+function print_color(){
+  NC='\033[0m' # No Color
+
+  case $1 in
+    "green") COLOR='\033[0;32m' ;;
+    "red") COLOR='\033[0;31m' ;;
+    "yellow") COLOR='\033[0;33m' ;;
+    "*") COLOR='\033[0m' ;;
+  esac
+
+  echo -e "${COLOR} $2 ${NC}"
+}
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  print_color "red" 'docker-compose is not installed or running' >&2
+  exit 1
+fi
+
+if ! [ "$(docker-compose ps --filter status=running -q nginx)" ]; then
+  print_color "red" 'Docker services was not running' >&2
+  print_color "yellow" 'Trying to start docker services' >&2
+  docker-compose up -d
+fi
+
+print_color "yellow" 'Web: Install NPM packages' >&2
+docker-compose exec web yarn install
+
+print_color "yellow" 'Web: Build next' >&2
+docker-compose exec web yarn build
+
+print_color "yellow" 'Docker: permission logs' >&2
+docker-compose exec app chmod 777 -R ./storage/logs/
+
+docker-compose exec app chmod 777 -R ./storage/framework/
+
+print_color "yellow" 'Docker: Restart worker services' >&2
+docker-compose restart worker
+
+print_color "green" 'Successfully deployed!!!' >&2

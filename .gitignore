@@ -1,0 +1,10 @@
+.data
+.vscode
+.idea
+.env
+/app/
+/web/
+/extension/
+/admin/
+docker-compose.yml
+make-ssl.sh
