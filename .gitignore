@@ -2,9 +2,9 @@
 .vscode
 .idea
 .env
-/app/
-/web/
+# /app/
+# /web/
 /extension/
-/admin/
-docker-compose.yml
+# /admin/
+# docker-compose.yml
 make-ssl.sh
