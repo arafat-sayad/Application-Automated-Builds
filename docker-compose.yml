@@ -29,6 +29,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/app/Dockerfile
+    image: sayad1/app:latest
     container_name: bit_integration_app
     volumes:
       - ./app:/var/www/app
@@ -42,6 +43,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/admin/Dockerfile
+    image: sayad1/admin:latest
     container_name: bit_integration_admin
     volumes:
       - ./admin:/var/www/admin
