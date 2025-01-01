@@ -40,6 +40,7 @@ jobs:
           SERVICE=${{ github.event.inputs.service }}
           echo "Building Docker image for service: $SERVICE"
           docker-compose build $SERVICE
+          docker images
           SERVICE=${{ github.event.inputs.service }}
           IMAGE_NAME="${DOCKER_HUB_USERNAME}/${SERVICE}:latest"
           echo "Tagging image as $IMAGE_NAME"
