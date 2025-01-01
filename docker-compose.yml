@@ -60,8 +60,8 @@ services:
     volumes:
       - ./web:/usr/src/web
       - /usr/src/web/node_modules
-    env_file:
-      - ./web/.env
+    # env_file:
+    #   - ./web/.env
     networks:
       - bit_integration_network
     environment:
