@@ -1,30 +1,4 @@
-version: "3"
 services:
-  nginx:
-    image: nginx:latest
-    container_name: bit_integration_nginx
-    volumes:
-      - ./.docker/nginx/nginx.conf:/etc/nginx/nginx.conf # app and api panel
-      - ./.docker/nginx/app/local.conf:/etc/nginx/conf.d/default.conf # app
-      - ./.docker/nginx/admin/local.conf:/etc/nginx/conf.d/admin.conf # admin
-      - ./.data/nginx/logs:/var/log/nginx
-      - ./app:/var/www/app
-      - ./admin:/var/www/admin
-      #- ./.data/certs/certbot/conf:/etc/letsencrypt # Uncomment when deploying to production
-      #- ./.data/certs/certbot/www:/var/www/certbot # Uncomment when deploying to production
-    ports:
-      # - 81:81 # Uncomment when you have an admin application to serve
-      - 443:443 # Uncomment when deploying to production
-      - 80:80 # Uncomment when deploying to production
-    depends_on:
-      - app
-      - web
-      - admin # Uncomment when you have an admin application to serve
-    networks:
-      - bit_integration_network
-    environment:
-      - X_SERVER_TYPE=nginx
-
   app:
     build:
       context: .
@@ -57,6 +31,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/web/Dockerfile
+    image: web:latest
     container_name: bit_integration_web
     stdin_open: true
     volumes:
@@ -69,22 +44,11 @@ services:
     environment:
       - X_SERVER_TYPE=web
 
-  redis:
-    image: redis:latest
-    container_name: bit_integration_redis
-    ports:
-      - 6379:6379
-    volumes:
-      - ./.data/redis:/data
-    entrypoint: redis-server --appendonly yes
-    restart: always
-    networks:
-      - bit_integration_network
-
   worker:
     build:
       context: .
       dockerfile: ./.docker/worker/Dockerfile
+    image: worker:latest
     container_name: bit_integration_worker
     command: /usr/bin/supervisord -c /etc/supervisord.conf
     volumes:
@@ -95,56 +59,6 @@ services:
       - bit_integration_network
     environment:
       - X_SERVER_TYPE=worker
-
-  database:
-    container_name: bit_integration_database
-    image: postgres:14
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE}
-      PGDATA: /data/postgres
-    volumes:
-      # - ./.docker/postgres/initdb:/docker-entrypoint-initdb.d # Uncomment to initialize another database
-      - ./.data/postgres:/data/postgres
-    ports:
-      - "5432:5432"
-    restart: always
-    networks:
-      - bit_integration_network
-
-  mailpit:
-    image: axllent/mailpit
-    container_name: bit_integration_mailpit
-    ports:
-      - 1026:1025 # SMTP server
-      - 8025:8025 # Web UI
-    networks:
-      - bit_integration_network
-
-  certbot:
-    image: certbot/certbot
-    container_name: bit_integration_certbot
-    restart: unless-stopped
-    volumes:
-      - ./.data/certs/certbot/conf:/etc/letsencrypt
-      - ./.data/certs/certbot/www:/var/www/certbot
-    networks:
-      - bit_integration_network
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
-  # ngrok:
-  #   image: ngrok/ngrok
-  #   container_name: bit_integration_ngrok
-  #   ports:
-  #     - "4041:4040"
-  #   environment:
-  #     NGROK_AUTHTOKEN: ${NGROK_AUTH}
-  #   command: http --domain=${NGROK_DOMAIN} nginx:80
-  #   depends_on:
-  #     - nginx
-  #   networks:
-  #     - bit_integration_network
 
 volumes:
   pgdata:
