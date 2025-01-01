@@ -1,0 +1,70 @@
+name: Docker Service Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Enter the service name to update (e.g., app)'
+        required: true
+        default: 'app'
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Service
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+
+    steps:
+    # Checkout repository
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # Login to Docker Hub
+    - name: Login to Docker Hub
+      run: |
+        echo "${DOCKER_HUB_PASSWORD}" | docker login -u "${DOCKER_HUB_USERNAME}" --password-stdin
+
+    # Build Docker Image for the specified service
+    - name: Build Docker Image
+      run: |
+        SERVICE=${{ github.event.inputs.service }}
+        echo "Building Docker image for service: $SERVICE"
+        docker-compose build $SERVICE
+
+    # Tag and Push Docker Image to Docker Hub
+    - name: Tag and Push Docker Image
+      run: |
+        SERVICE=${{ github.event.inputs.service }}
+        IMAGE_NAME="${DOCKER_HUB_USERNAME}/${SERVICE}:latest"
+        echo "Tagging image as $IMAGE_NAME"
+        docker tag $SERVICE $IMAGE_NAME
+        echo "Pushing image to Docker Hub"
+        docker push $IMAGE_NAME
+
+    # Deploy Updated Image to Server
+    - name: Deploy to Server
+      run: |
+        SERVICE=${{ github.event.inputs.service }}
+        echo "Deploying service: $SERVICE to the server"
+
+        # Create SSH key file
+        echo "${SERVER_SSH_KEY}" > ssh_key
+        chmod 600 ssh_key
+
+        # SSH into the server and run the deployment script
+        ssh -i ssh_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} <<EOF
+          # Pull the latest image and update the service
+          bash /path/to/update_service_with_existing_image.sh $SERVICE
+EOF
+
+    # Clean up local environment
+    - name: Cleanup
+      run: |
+        docker image prune -f
+        rm -f ssh_key
