@@ -32,7 +32,6 @@ jobs:
         run: |
           SERVICE=${{ github.event.inputs.service }}
           echo "Building Docker image for service: $SERVICE"
-          cp docker-compose.yml.example docker-compose.yml
           docker-compose build $SERVICE
 
       # Tag and Push Docker Image to Docker Hub
