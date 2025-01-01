@@ -39,15 +39,14 @@ jobs:
         run: |
           SERVICE=${{ github.event.inputs.service }}
           echo "Building Docker image for service: $SERVICE"
-          docker-compose build $SERVICE
+          docker-compose -f docker-compose-build.yml build $SERVICE
           docker images
-          docker push $SERVICE
           SERVICE=${{ github.event.inputs.service }}
-          # IMAGE_NAME="$sayad1/${SERVICE}:latest"
-          # echo "Tagging image as $IMAGE_NAME"
-          # docker tag $SERVICE $IMAGE_NAME
-          # echo "Pushing image to Docker Hub"
-          # docker push $IMAGE_NAME
+          IMAGE_NAME="${DOCKER_HUB_USERNAME}/${SERVICE}:latest"
+          echo "Tagging image as $IMAGE_NAME"
+          docker tag $SERVICE $IMAGE_NAME
+          echo "Pushing image to Docker Hub"
+          docker push $IMAGE_NAME
 
       # # Tag and Push Docker Image to Docker Hub
       # - name: Tag and Push Docker Image
