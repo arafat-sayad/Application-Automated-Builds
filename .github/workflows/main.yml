@@ -51,24 +51,21 @@ jobs:
           echo "Pushing image to Docker Hub"
           docker push $IMAGE_NAME
 
-#     # Deploy Updated Image to Server
-#     - name: Deploy to Server
-#       run: |
-#         SERVICE=${{ github.event.inputs.service }}
-#         echo "Deploying service: $SERVICE to the server"
+  # Deploy Updated Image to Server
+  Continuous-Deployment:
+    needs: build-and-deploy
+    runs-on: [self-hosted] # Use self-hosted runner
+    steps:
+      # - name: Checkout Code
+      #   uses: actions/checkout@v3
 
-#         # Create SSH key file
-#         echo "${SERVER_SSH_KEY}" > ssh_key
-#         chmod 600 ssh_key
+      - name: Deploy the application
+        run: |
+          SERVICE=${{ github.event.inputs.service }}
+          echo "Deploying service: $SERVICE"
 
-#         # SSH into the server and run the deployment script
-#         ssh -i ssh_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} <<EOF
-#           # Pull the latest image and update the service
-#           bash /path/to/update_service_with_existing_image.sh $SERVICE
-# EOF
+          # Change directory to the application folder
+          cd ${{ secrets.AWS_DIRECTORY }}
 
-#     # Clean up local environment
-#     - name: Cleanup
-#       run: |
-#         docker image prune -f
-#         rm -f ssh_key
+          # Execute the deployment script with the service name
+          ./update-service-new-images.sh $SERVICE

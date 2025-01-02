@@ -26,9 +26,9 @@ services:
       - X_SERVER_TYPE=nginx
 
   app:
-    build:
-      context: .
-      dockerfile: ./.docker/app/Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: ./.docker/app/Dockerfile
     image: sayad1/app:latest
     container_name: bit_integration_app
     volumes:
@@ -40,9 +40,9 @@ services:
       - X_SERVER_TYPE=app
 
   admin:
-    build:
-      context: .
-      dockerfile: ./.docker/admin/Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: ./.docker/admin/Dockerfile
     image: sayad1/admin:latest
     container_name: bit_integration_admin
     volumes:
@@ -82,9 +82,10 @@ services:
       - bit_integration_network
 
   worker:
-    build:
-      context: .
-      dockerfile: ./.docker/worker/Dockerfile
+    # build:
+    #   context: .
+    #   dockerfile: ./.docker/worker/Dockerfile
+    image: sayad1/worker:latest
     container_name: bit_integration_worker
     command: /usr/bin/supervisord -c /etc/supervisord.conf
     volumes:
