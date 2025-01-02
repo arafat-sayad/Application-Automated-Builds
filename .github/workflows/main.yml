@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       service:
-        description: "Enter the service name to update (e.g., app)"
+        description: "Enter the service name to update (e.g., app, admin,worker)"
         required: true
         default: "app"
 
